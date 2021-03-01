@@ -1,0 +1,67 @@
+package pl.coderslab.notices_service.controller;
+
+import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
+import org.springframework.validation.BindingResult;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import pl.coderslab.notices_service.model.sections.Services;
+import pl.coderslab.notices_service.repository.ServicesRepository;
+
+import javax.validation.Valid;
+import java.util.List;
+
+@Controller
+@RequestMapping("/services")
+public class ServicesController {
+
+    private final ServicesRepository servicesRepository;
+
+    public ServicesController(ServicesRepository servicesRepository) {
+        this.servicesRepository = servicesRepository;
+    }
+
+    @RequestMapping("/all")
+    public String showAllServices(Model model) {
+        List<Services> servicess = servicesRepository.findAllByOrderByCreatedDesc();
+        model.addAttribute("services", servicess);
+        return "services/servicesBasicView";
+    }
+
+    @GetMapping("/add")
+    public String getAddServices(Services services, Model model) {
+        return "services/servicesAdd";
+    }
+
+    @PostMapping("/add")
+    public String postAddServices(@Valid Services services, BindingResult result) {
+        if (result.hasErrors()) {
+            return "errors/generalError";
+        }
+        servicesRepository.save(services);
+        return "redirect:/services/all";
+    }
+
+    @GetMapping("/edit/{id}")
+    public String getEditServices(@PathVariable Long id, Model model) {
+        model.addAttribute("services", servicesRepository.findById(id));
+        return "services/servicesEdit";
+    }
+
+    @PostMapping("/edit/{id}")
+    public String postEditServices(@Valid Services services, BindingResult result) {
+        if (result.hasErrors()) {
+            return "errors/generalError";
+        }
+        servicesRepository.save(services);
+        return "redirect:/services/all";
+    }
+
+    @RequestMapping("/delete/{id}")
+    public String deleteServices(@PathVariable Long id) {
+        servicesRepository.deleteById(id);
+        return "redirect:/services/all";
+    }
+}
